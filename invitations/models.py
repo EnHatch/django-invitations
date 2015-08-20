@@ -45,6 +45,8 @@ class Invitation(models.Model):
     def send_invitation(self, request, **kwargs):
         current_site = (kwargs['site'] if 'site' in kwargs
                         else Site.objects.get_current())
+        password = (kwargs['password'] if 'password' in kwargs
+                    else "")
         invite_url = reverse('invitations:accept-invite',
                              args=[self.key])
         invite_url = request.build_absolute_uri(invite_url)
@@ -53,6 +55,7 @@ class Invitation(models.Model):
             'invite_url': invite_url,
             'site_name': current_site.name,
             'email': self.email,
+            'password': password,
             'key': self.key,
         }
 
