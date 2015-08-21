@@ -47,6 +47,10 @@ class Invitation(models.Model):
                         else Site.objects.get_current())
         password = (kwargs['password'] if 'password' in kwargs
                     else "")
+        app_name = (kwargs['app_name'] if 'app_name' in kwargs
+                    else "Convey")
+        app_url = (kwargs['app_url'] if 'app_url' in kwargs
+                   else "itms://itunes.apple.com/us/app/convey-for-sales/id990728841?mt=8")
         invite_url = reverse('invitations:accept-invite',
                              args=[self.key])
         invite_url = request.build_absolute_uri(invite_url)
@@ -57,6 +61,9 @@ class Invitation(models.Model):
             'email': self.email,
             'password': password,
             'key': self.key,
+            'inviter_name': request.user.get_full_name(),
+            'app_name': app_name,
+            'app_url': app_url
         }
 
         email_template = 'invitations/email/email_invite'
