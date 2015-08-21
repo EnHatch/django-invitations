@@ -50,7 +50,7 @@ class Invitation(models.Model):
         app_name = (kwargs['app_name'] if 'app_name' in kwargs
                     else "Convey")
         app_url = (kwargs['app_url'] if 'app_url' in kwargs
-                   else "itms://itunes.apple.com/us/app/convey-for-sales/id990728841?mt=8")
+                   else "http://itunes.apple.com/us/app/convey-for-sales/id990728841?mt=8")
         invite_url = reverse('invitations:accept-invite',
                              args=[self.key])
         invite_url = request.build_absolute_uri(invite_url)
