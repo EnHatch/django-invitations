@@ -49,8 +49,8 @@ class Invitation(models.Model):
                     else "")
         app_name = (kwargs['app_name'] if 'app_name' in kwargs
                     else "Convey")
-        app_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
-                    else "A Convey user")
+        inviter_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
+                        else "A Convey user")
         app_url = (kwargs['app_url'] if 'app_url' in kwargs
                    else "http://itunes.apple.com/us/app/convey-for-sales/id990728841?mt=8")
         invite_url = reverse('invitations:accept-invite',
@@ -63,7 +63,7 @@ class Invitation(models.Model):
             'email': self.email,
             'password': password,
             'key': self.key,
-            'inviter_name': self.inviter_name,
+            'inviter_name': inviter_name,
             'app_name': app_name,
             'app_url': app_url
         }
