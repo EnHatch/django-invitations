@@ -42,6 +42,44 @@ class Invitation(models.Model):
                 days=app_settings.INVITATION_EXPIRY))
         return expiration_date <= timezone.now()
 
+    def generate_html_invitation(self, request, **kwargs):
+        from django.template.loader import render_to_string
+
+        current_site = (kwargs['site'] if 'site' in kwargs
+                        else Site.objects.get_current())
+        password = (kwargs['password'] if 'password' in kwargs
+                    else "")
+        app_name = (kwargs['app_name'] if 'app_name' in kwargs
+                    else "Convey")
+        inviter_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
+                        else "A Convey user")
+        app_url = (kwargs['app_url'] if 'app_url' in kwargs
+                   else "http://itunes.apple.com/us/app/convey-for-sales/id990728841?mt=8")
+        invite_url = reverse('invitations:accept-invite',
+                             args=[self.key])
+        invite_url = request.build_absolute_uri(invite_url)
+
+        ctx = {
+            'invite_url': invite_url,
+            'site_name': current_site.name,
+            'email': self.email,
+            'password': password,
+            'key': self.key,
+            'inviter_name': inviter_name,
+            'app_name': app_name,
+            'app_url': app_url
+        }
+
+        email_template = 'invitations/email/email_invite.html'
+
+        signals.invite_url_sent.send(
+            sender=self.__class__,
+            instance=self,
+            invite_url_sent=invite_url,
+            inviter=request.user)
+
+        return render_to_string(email_template, ctx)
+
     def send_invitation(self, request, **kwargs):
         current_site = (kwargs['site'] if 'site' in kwargs
                         else Site.objects.get_current())
