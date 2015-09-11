@@ -42,7 +42,7 @@ class Invitation(models.Model):
                 days=app_settings.INVITATION_EXPIRY))
         return expiration_date <= timezone.now()
 
-    def generate_html_invitation(self, request, **kwargs):
+    def generate_html_invitation(self, request, email_template, **kwargs):
         from django.template.loader import render_to_string
 
         current_site = (kwargs['site'] if 'site' in kwargs
@@ -70,7 +70,8 @@ class Invitation(models.Model):
             'app_url': app_url
         }
 
-        email_template = 'invitations/email/email_invite_message.html'
+        if not email_template:
+            email_template = 'invitations/email/email_invite_message.html'
 
         signals.invite_url_sent.send(
             sender=self.__class__,
