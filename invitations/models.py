@@ -70,7 +70,7 @@ class Invitation(models.Model):
             'app_url': app_url
         }
 
-        email_template = 'invitations/email/email_invite.html'
+        email_template = 'invitations/email/email_invite_message.html'
 
         signals.invite_url_sent.send(
             sender=self.__class__,
