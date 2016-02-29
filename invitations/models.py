@@ -57,7 +57,8 @@ class Invitation(models.Model):
                    else "http://itunes.apple.com/us/app/convey-for-sales/id990728841?mt=8")
         invite_url = reverse('invitations:accept-invite',
                              args=[self.key])
-        invite_url = request.build_absolute_uri(invite_url)
+        invite_url = ''.join(['https://', current_site.domain, invite_url])
+        # invite_url = request.build_absolute_uri(invite_url)
 
         ctx = {
             'invite_url': invite_url,
@@ -94,7 +95,8 @@ class Invitation(models.Model):
                    else "http://itunes.apple.com/us/app/convey-for-sales/id990728841?mt=8")
         invite_url = reverse('invitations:accept-invite',
                              args=[self.key])
-        invite_url = request.build_absolute_uri(invite_url)
+        invite_url = ''.join(['https://', current_site.domain, invite_url])
+        # invite_url = request.build_absolute_uri(invite_url)
 
         ctx = {
             'invite_url': invite_url,
