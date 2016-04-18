@@ -50,9 +50,9 @@ class Invitation(models.Model):
         password = (kwargs['password'] if 'password' in kwargs
                     else "")
         app_name = (kwargs['app_name'] if 'app_name' in kwargs
-                    else "Convey")
+                    else "Capture")
         inviter_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
-                        else "A Convey user")
+                        else "A Capture user")
         app_url = (kwargs['app_url'] if 'app_url' in kwargs
                    else "http://itunes.apple.com/us/app/capture-for-field-sales/id1086398146?mt=8")
         invite_url = reverse('invitations:accept-invite',
@@ -88,9 +88,9 @@ class Invitation(models.Model):
         password = (kwargs['password'] if 'password' in kwargs
                     else "")
         app_name = (kwargs['app_name'] if 'app_name' in kwargs
-                    else "Convey")
+                    else "Capture")
         inviter_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
-                        else "A Convey user")
+                        else "A Capture user")
         app_url = (kwargs['app_url'] if 'app_url' in kwargs
                    else "http://itunes.apple.com/us/app/capture-for-field-sales/id1086398146?mt=8")
         invite_url = reverse('invitations:accept-invite',
