@@ -47,8 +47,6 @@ class Invitation(models.Model):
 
         current_site = (kwargs['site'] if 'site' in kwargs
                         else Site.objects.get_current())
-        password = (kwargs['password'] if 'password' in kwargs
-                    else "")
         app_name = (kwargs['app_name'] if 'app_name' in kwargs
                     else "Capture")
         inviter_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
@@ -64,7 +62,6 @@ class Invitation(models.Model):
             'invite_url': invite_url,
             'site_name': current_site.name,
             'email': self.email,
-            'password': password,
             'key': self.key,
             'inviter_name': inviter_name,
             'app_name': app_name,
@@ -85,8 +82,6 @@ class Invitation(models.Model):
     def send_invitation(self, request, **kwargs):
         current_site = (kwargs['site'] if 'site' in kwargs
                         else Site.objects.get_current())
-        password = (kwargs['password'] if 'password' in kwargs
-                    else "")
         app_name = (kwargs['app_name'] if 'app_name' in kwargs
                     else "Capture")
         inviter_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
@@ -102,7 +97,6 @@ class Invitation(models.Model):
             'invite_url': invite_url,
             'site_name': current_site.name,
             'email': self.email,
-            'password': password,
             'key': self.key,
             'inviter_name': inviter_name,
             'app_name': app_name,
