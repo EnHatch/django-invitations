@@ -56,6 +56,9 @@ class Invitation(models.Model):
         invite_url = reverse('invitations:accept-invite',
                              args=[self.key])
         invite_url = ''.join(['https://', current_site.domain, invite_url])
+        account_logo = (
+            kwargs['account_logo'] if 'account_logo' in kwargs
+            else "")
         # invite_url = request.build_absolute_uri(invite_url)
 
         ctx = {
@@ -65,7 +68,8 @@ class Invitation(models.Model):
             'key': self.key,
             'inviter_name': inviter_name,
             'app_name': app_name,
-            'app_url': app_url
+            'app_url': app_url,
+            'account_logo': account_logo
         }
 
         if not email_template:
@@ -92,6 +96,9 @@ class Invitation(models.Model):
                              args=[self.key])
         invite_url = ''.join(['https://', current_site.domain, invite_url])
         # invite_url = request.build_absolute_uri(invite_url)
+        account_logo = (
+            kwargs['account_logo'] if 'account_logo' in kwargs
+            else "")
 
         ctx = {
             'invite_url': invite_url,
@@ -100,7 +107,8 @@ class Invitation(models.Model):
             'key': self.key,
             'inviter_name': inviter_name,
             'app_name': app_name,
-            'app_url': app_url
+            'app_url': app_url,
+            'account_logo': account_logo
         }
 
         email_template = 'invitations/email/email_invite'
