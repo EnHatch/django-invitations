@@ -44,21 +44,11 @@ class Invitation(models.Model):
 
     def generate_html_invitation(self, request, email_template, **kwargs):
         from django.template.loader import render_to_string
-
         current_site = (kwargs['site'] if 'site' in kwargs
                         else Site.objects.get_current())
-        app_name = (kwargs['app_name'] if 'app_name' in kwargs
-                    else "Capture")
-        inviter_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
-                        else "A Capture user")
-        app_url = (kwargs['app_url'] if 'app_url' in kwargs
-                   else "http://itunes.apple.com/us/app/capture-for-field-sales/id1086398146?mt=8")
         invite_url = reverse('invitations:accept-invite',
                              args=[self.key])
         invite_url = ''.join(['https://', current_site.domain, invite_url])
-        account_logo = (
-            kwargs['account_logo'] if 'account_logo' in kwargs
-            else "")
         # invite_url = request.build_absolute_uri(invite_url)
 
         ctx = {
@@ -66,50 +56,35 @@ class Invitation(models.Model):
             'site_name': current_site.name,
             'email': self.email,
             'key': self.key,
-            'inviter_name': inviter_name,
-            'app_name': app_name,
-            'app_url': app_url,
-            'account_logo': account_logo
+            'inviter': self.inviter,
         }
+
+        if 'extra' in kwargs:
+            ctx.update(kwargs['extra'])
 
         if not email_template:
             email_template = 'invitations/email/email_invite_message.html'
-
-        signals.invite_url_sent.send(
-            sender=self.__class__,
-            instance=self,
-            invite_url_sent=invite_url,
-            inviter=request.user)
 
         return render_to_string(email_template, ctx)
 
     def send_invitation(self, request, **kwargs):
         current_site = (kwargs['site'] if 'site' in kwargs
                         else Site.objects.get_current())
-        app_name = (kwargs['app_name'] if 'app_name' in kwargs
-                    else "Capture")
-        inviter_name = (kwargs['inviter_name'] if 'inviter_name' in kwargs
-                        else "A Capture user")
-        app_url = (kwargs['app_url'] if 'app_url' in kwargs
-                   else "http://itunes.apple.com/us/app/capture-for-field-sales/id1086398146?mt=8")
         invite_url = reverse('invitations:accept-invite',
                              args=[self.key])
         invite_url = ''.join(['https://', current_site.domain, invite_url])
         # invite_url = request.build_absolute_uri(invite_url)
-        account_logo = (
-            kwargs['account_logo'] if 'account_logo' in kwargs
-            else "")
 
         ctx = {
             'invite_url': invite_url,
             'site_name': current_site.name,
             'email': self.email,
             'key': self.key,
-            'inviter_name': inviter_name,
-            'app_name': app_name,
-            'app_url': app_url,
-            'account_logo': account_logo
+            'inviter': self.inviter,
         }
+
+        if 'extra' in kwargs:
+            ctx.update(kwargs['extra'])
 
         email_template = 'invitations/email/email_invite'
 
