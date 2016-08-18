@@ -56,7 +56,6 @@ class Invitation(models.Model):
             'site_name': current_site.name,
             'email': self.email,
             'key': self.key,
-            'inviter': self.inviter,
         }
 
         if 'extra' in kwargs:
@@ -80,7 +79,6 @@ class Invitation(models.Model):
             'site_name': current_site.name,
             'email': self.email,
             'key': self.key,
-            'inviter': self.inviter,
         }
 
         if 'extra' in kwargs:
