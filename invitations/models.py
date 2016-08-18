@@ -64,7 +64,12 @@ class Invitation(models.Model):
         if not email_template:
             email_template = 'invitations/email/email_invite_message.html'
 
-        return render_to_string(email_template, ctx)
+        message = render_to_string(email_template, ctx)
+
+        self.sent = timezone.now()
+        self.save()
+
+        return message
 
     def send_invitation(self, request, **kwargs):
         current_site = (kwargs['site'] if 'site' in kwargs
