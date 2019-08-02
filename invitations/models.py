@@ -1,39 +1,36 @@
 import datetime
 
+from django.conf import settings
+from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.encoding import python_2_unicode_compatible
-from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
 
-from allauth.account.adapter import DefaultAccountAdapter
-from allauth.account.adapter import get_adapter
+from django.utils.translation import ugettext_lazy as _
 
-from .managers import InvitationManager
-from .app_settings import app_settings
 from . import signals
+from .adapters import get_invitations_adapter
+from .app_settings import app_settings
+from .base_invitation import AbstractBaseInvitation
 
 
 @python_2_unicode_compatible
-class Invitation(models.Model):
-
-    email = models.EmailField(unique=True, verbose_name=_('e-mail address'))
-    accepted = models.BooleanField(verbose_name=_('accepted'), default=False)
+class Invitation(AbstractBaseInvitation):
+    email = models.EmailField(unique=True, verbose_name=_('e-mail address'),
+                              max_length=app_settings.EMAIL_MAX_LENGTH)
     created = models.DateTimeField(verbose_name=_('created'),
                                    default=timezone.now)
-    key = models.CharField(verbose_name=_('key'), max_length=64, unique=True)
-    sent = models.DateTimeField(verbose_name=_('sent'), null=True)
-
-    objects = InvitationManager()
 
     @classmethod
-    def create(cls, email):
+    def create(cls, email, inviter=None, **kwargs):
         key = get_random_string(64).lower()
         instance = cls._default_manager.create(
             email=email,
-            key=key)
+            key=key,
+            inviter=inviter,
+            **kwargs)
         return instance
 
     def key_expired(self):
@@ -84,6 +81,7 @@ class Invitation(models.Model):
             'site_name': current_site.name,
             'email': self.email,
             'key': self.key,
+            'inviter': self.inviter,
         }
 
         if 'extra' in kwargs:
@@ -91,7 +89,7 @@ class Invitation(models.Model):
 
         email_template = 'invitations/email/email_invite'
 
-        get_adapter().send_mail(
+        get_invitations_adapter().send_mail(
             email_template,
             self.email,
             ctx)
@@ -102,20 +100,30 @@ class Invitation(models.Model):
             sender=self.__class__,
             instance=self,
             invite_url_sent=invite_url,
-            inviter=request.user)
+            inviter=self.inviter)
 
     def __str__(self):
-        return "Invite: {0}".format(self.email).encode('utf8')
+        return "Invite: {0}".format(self.email)
 
 
-class InvitationsAdapter(DefaultAccountAdapter):
+# here for backwards compatibility, historic allauth adapter
+if hasattr(settings, 'ACCOUNT_ADAPTER'):
+    if settings.ACCOUNT_ADAPTER == 'invitations.models.InvitationsAdapter':
+        from allauth.account.adapter import DefaultAccountAdapter
+        from allauth.account.signals import user_signed_up
 
-    def is_open_for_signup(self, request):
-        if hasattr(request, 'session') and request.session.get('account_verified_email'):
-            return True
-        elif app_settings.INVITATION_ONLY is True:
-            # Site is ONLY open for invites
-            return False
-        else:
-            # Site is open to signup
-            return True
+        class InvitationsAdapter(DefaultAccountAdapter):
+
+            def is_open_for_signup(self, request):
+                if hasattr(request, 'session') and request.session.get(
+                        'account_verified_email'):
+                    return True
+                elif app_settings.INVITATION_ONLY is True:
+                    # Site is ONLY open for invites
+                    return False
+                else:
+                    # Site is open to signup
+                    return True
+
+            def get_user_signed_up_signal(self):
+                return user_signed_up

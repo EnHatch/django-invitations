@@ -1,25 +1,48 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import get_user_model
 
-from allauth.account.adapter import get_adapter
+from .adapters import get_invitations_adapter
+from .exceptions import AlreadyInvited, AlreadyAccepted, UserRegisteredEmail
+from .utils import get_invitation_model
 
-from .models import Invitation
+Invitation = get_invitation_model()
 
 
 class CleanEmailMixin(object):
 
+    def validate_invitation(self, email):
+        if Invitation.objects.all_valid().filter(
+                email__iexact=email, accepted=False):
+            raise AlreadyInvited
+        elif Invitation.objects.filter(
+                email__iexact=email, accepted=True):
+            raise AlreadyAccepted
+        elif get_user_model().objects.filter(email__iexact=email):
+            raise UserRegisteredEmail
+        else:
+            return True
+
     def clean_email(self):
-        value = self.cleaned_data["email"]
-        value = get_adapter().clean_email(value)
+        email = self.cleaned_data["email"]
+        email = get_invitations_adapter().clean_email(email)
+
         errors = {
             "already_invited": _("This e-mail address has already been"
                                  " invited."),
+            "already_accepted": _("This e-mail address has already"
+                                  " accepted an invite."),
+            "email_in_use": _("An active user is using this e-mail address"),
         }
-
-        if Invitation.objects.filter(email__iexact=value, accepted=False):
+        try:
+            self.validate_invitation(email)
+        except(AlreadyInvited):
             raise forms.ValidationError(errors["already_invited"])
-
-        return value
+        except(AlreadyAccepted):
+            raise forms.ValidationError(errors["already_accepted"])
+        except(UserRegisteredEmail):
+            raise forms.ValidationError(errors["email_in_use"])
+        return email
 
 
 class InviteForm(forms.Form, CleanEmailMixin):
@@ -27,7 +50,8 @@ class InviteForm(forms.Form, CleanEmailMixin):
     email = forms.EmailField(
         label=_("E-mail"),
         required=True,
-        widget=forms.TextInput(attrs={"type": "email", "size": "30"}))
+        widget=forms.TextInput(
+            attrs={"type": "email", "size": "30"}), initial="")
 
     def save(self, email):
         return Invitation.create(email=email)
@@ -42,14 +66,17 @@ class InvitationAdminAddForm(forms.ModelForm, CleanEmailMixin):
     def save(self, *args, **kwargs):
         cleaned_data = super(InvitationAdminAddForm, self).clean()
         email = cleaned_data.get("email")
-        instance = Invitation.create(email=email)
+        params = {'email': email}
+        if cleaned_data.get("inviter"):
+            params['inviter'] = cleaned_data.get("inviter")
+        instance = Invitation.create(**params)
         instance.send_invitation(self.request)
         super(InvitationAdminAddForm, self).save(*args, **kwargs)
         return instance
 
     class Meta:
         model = Invitation
-        fields = ("email", )
+        fields = ("email", "inviter")
 
 
 class InvitationAdminChangeForm(forms.ModelForm):

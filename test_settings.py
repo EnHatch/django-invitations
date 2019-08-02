@@ -3,16 +3,11 @@ import django
 
 SECRET_KEY = 'not_empty'
 SITE_ID = 1
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': ':memory:',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
     }
 }
 
@@ -54,24 +49,18 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
 INSTALLED_APPS = (
     'django.contrib.auth',
+    'django.contrib.admin',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
+    'tests',
     'invitations',
-    'django_nose',
 )
-
-EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 )
-
-ACCOUNT_ADAPTER = 'invitations.models.InvitationsAdapter'
